@@ -70,6 +70,18 @@ try
     _playerObject setVariable ["ExileScore", _playerRespect];
     format["setAccountMoneyAndRespect:%1:%2:%3", _playerMoney, _playerRespect, (getPlayerUID _playerObject)] call ExileServer_system_database_query_fireAndForget;
     [_sessionID, "wasteDumpResponse", [0, str _playerMoney, str _playerRespect]] call ExileServer_system_network_send_to;
+	
+	_recycleLog = format[
+	"PLAYER: %1:%7 %2 POPTABS AND %3 RESPECT | PLAYER TOTAL MONEY: %4 | RECYCLED ITEM: %5 WITH %6 CARGO FOR ",
+	_playerObject,
+	_revenue,
+	_respectGain,
+	_playerMoney,
+	_vehicleObject,
+	_cargo,
+	(getPlayerUID _playerObject)
+	];
+	['A3_EXILE_RECYCLELOG_BIG',_recycleLog] call FNC_A3_CUSTOMLOG;
 }
 catch
 {
