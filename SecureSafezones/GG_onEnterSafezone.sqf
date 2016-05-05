@@ -1,5 +1,5 @@
 /**
- * ExileClient_object_player_event_onEnterSafezone
+ * ExileClient_object_player_thread_safeZone
  *
  * Exile Mod
  * www.exilemod.com
@@ -8,48 +8,76 @@
  * This work is licensed under the Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International License. 
  * To view a copy of this license, visit http://creativecommons.org/licenses/by-nc-nd/4.0/.
  * MODIFIED BY GR8's Anti Steal
+ * Updated by second_coming to allow players to enter Occupation public transport in safe zones
  */
  
-private["_vehicle","_attachedObjects","_position"];
-if (ExilePlayerInSafezone) exitWith { false };
-ExilePlayerInSafezone = true;
-
-if (alive player) then
-{
-	player allowDamage false;
-	player removeAllEventHandlers "HandleDamage";
-};
+private["_vehicle","_playerDriver","_vehicleOwner","_ownerGroup","_friends","_near","_around","_countNear","_countNearMine"];
 _vehicle = vehicle player;
-if !(_vehicle isEqualTo player) then 
+_publicTransport = _vehicle getVariable "SC_transport";
+if (!ExilePlayerInSafezone) exitWith {false}; 
+if (_vehicle isEqualTo player) then 
 {
-
+	if !(isNull ExileClientSafeZoneVehicle) then
+	{
+		ExileClientSafeZoneVehicle removeEventHandler ["Fired", ExileClientSafeZoneVehicleFiredEventHandler];	
+		ExileClientSafeZoneVehicle = objNull;
+		ExileClientSafeZoneVehicleFiredEventHandler = nil;
+	};
+}
+else 
+{
 	if (local _vehicle) then 
 	{
 		_vehicle allowDamage false;
 	};
-	_attachedObjects = attachedObjects _vehicle;
-	if !(_attachedObjects isEqualTo []) then 
+	if !(_vehicle isEqualTo ExileClientSafeZoneVehicle) then 
 	{
-		_position = getPosATL _vehicle;
+		if !(isNull ExileClientSafeZoneVehicle) then 
 		{
-			if ((typeOf _x) in ["DemoCharge_Remote_Mag", "SatchelCharge_Remote_Mag"]) then 
+			ExileClientSafeZoneVehicle removeEventHandler ["Fired", ExileClientSafeZoneVehicleFiredEventHandler];	
+			ExileClientSafeZoneVehicle = objNull;
+			ExileClientSafeZoneVehicleFiredEventHandler = nil;
+		};
+		ExileClientSafeZoneVehicle = _vehicle;
+		ExileClientSafeZoneVehicleFiredEventHandler = _vehicle addEventHandler ["Fired", {_this call ExileClient_object_player_event_onFiredSafeZoneVehicle}];
+
+		// GR8's Anti Steal
+		if (GG_vehicleSteal && !_publicTransport) then 
+		{
+			_playerDriver = player == driver ExileClientSafeZoneVehicle;
+			_vehicleOwner = ExileClientSafeZoneVehicle getVariable ['GR8owner', objNull];
+			if (GG_vehicleGroup) then {_ownerGroup = units group _vehicleOwner;} else {_ownerGroup = _vehicleOwner;};
+			if (isNull _vehicleOwner) then 
 			{
-				detach _x;
-				_x setPosATL [(_position select 0) + random 2, (_position select 1) + random 2, 0.05];
-				_x setDir (random 360);
+				if (GG_vehicleClaim) then 
+				{
+					if (_playerDriver) then 
+					{
+						ExileClientSafeZoneVehicle setVariable ['GR8owner', player, true]; _vehicleOwner = player;
+					} 
+					else 
+					{
+						if !(player in _ownerGroup) then 
+						{
+							cutText [format['SECURESAFEZONES: %1, This is an abandoned vehicle. Enter in the driver/pilot seat to claim this vehicle.',name player],'PLAIN'];
+							player action ['getOut', ExileClientSafeZoneVehicle];
+						};
+					};
+				};
+			} 
+			else 
+			{
+				if !(player in _ownerGroup) then {
+					["Whoops", ["Cannot Enter This Vehicle"]] call ExileClient_gui_notification_event_addNotification;
+					player action ['getOut', ExileClientSafeZoneVehicle];
+					disableUserInput true;
+					cutText ["SECURESAFEZONES: YOU DO NOT OWN THIS VEHICLE !","WHITE IN", 5];
+					uiSleep GG_vehiclePenalty;
+					disableUserInput false;
+				};
 			};
-		}
-		forEach _attachedObjects;
+		};
+		// GR8's Anti Steal
 	};
-	ExileClientSafeZoneVehicle = _vehicle;
-	 // GR8's Anti Steal
-	if ((player == driver ExileClientSafeZoneVehicle) && (GG_vehicleEnter)) then {
-		ExileClientSafeZoneVehicle setVariable ['GR8owner', player, true];
-	};
-	 // GR8's Anti Steal
-	ExileClientSafeZoneVehicleFiredEventHandler = _vehicle addEventHandler ["Fired", {_this call ExileClient_object_player_event_onFiredSafeZoneVehicle}];
 };
-ExileClientSafeZoneESPEventHandler = addMissionEventHandler ["Draw3D", {20 call ExileClient_gui_safezone_safeESP}];
-["SafezoneEnter"] call ExileClient_gui_notification_event_addNotification;
-ExileClientSafeZoneUpdateThreadHandle = [1, ExileClient_object_player_thread_safeZone, [], true] call ExileClient_system_thread_addtask;
 true
