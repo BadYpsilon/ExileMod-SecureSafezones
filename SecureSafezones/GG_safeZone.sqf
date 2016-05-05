@@ -12,6 +12,7 @@
  
 private["_vehicle","_playerDriver","_vehicleOwner","_ownerGroup","_friends","_near","_around","_countNear","_countNearMine"];
 _vehicle = vehicle player;
+_publicTransport = _vehicle getVariable "SC_transport";
 if (!ExilePlayerInSafezone) exitWith {false}; 
 if (_vehicle isEqualTo player) then 
 {
@@ -40,22 +41,31 @@ else
 		ExileClientSafeZoneVehicleFiredEventHandler = _vehicle addEventHandler ["Fired", {_this call ExileClient_object_player_event_onFiredSafeZoneVehicle}];
 
 		// GR8's Anti Steal
-		if (GG_vehicleSteal) then {
+		if (GG_vehicleSteal && !_publicTransport) then 
+		{
 			_playerDriver = player == driver ExileClientSafeZoneVehicle;
 			_vehicleOwner = ExileClientSafeZoneVehicle getVariable ['GR8owner', objNull];
 			if (GG_vehicleGroup) then {_ownerGroup = units group _vehicleOwner;} else {_ownerGroup = _vehicleOwner;};
-			if (isNull _vehicleOwner) then {
-				if (GG_vehicleClaim) then {
-					if (_playerDriver) then {
+			if (isNull _vehicleOwner) then 
+			{
+				if (GG_vehicleClaim) then 
+				{
+					if (_playerDriver) then 
+					{
 						ExileClientSafeZoneVehicle setVariable ['GR8owner', player, true]; _vehicleOwner = player;
-					} else {
-						if !(player in _ownerGroup) then {
-							cutText [format['SECURESAFEZONES: %1, This is an abondoned vehicle. Enter in the driver/pilot seat to claim this vehicle.',name player],'PLAIN'];
+					} 
+					else 
+					{
+						if !(player in _ownerGroup) then 
+						{
+							cutText [format['SECURESAFEZONES: %1, This is an abandoned vehicle. Enter in the driver/pilot seat to claim this vehicle.',name player],'PLAIN'];
 							player action ['getOut', ExileClientSafeZoneVehicle];
 						};
 					};
 				};
-			} else {
+			} 
+			else 
+			{
 				if !(player in _ownerGroup) then {
 					["Whoops", ["Cannot Enter This Vehicle"]] call ExileClient_gui_notification_event_addNotification;
 					player action ['getOut', ExileClientSafeZoneVehicle];
