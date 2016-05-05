@@ -26,11 +26,13 @@ class CfgExileCustomCode
 ```
 - Add this Below:
 ```
-ExileClient_object_player_thread_safeZone = 			"SecureSafezones\GG_safeZone.sqf";
-ExileClient_object_player_event_onEnterSafezone = 		"SecureSafezones\GG_onEnterSafezone.sqf";
-ExileClient_object_player_event_onLeaveSafezone = 		"SecureSafezones\GG_onLeaveSafezone.sqf";
-ExileServer_system_trading_network_wasteDumpRequest = 	"SecureSafezones\GG_wasteDumpRequest.sqf";
-ExileClient_object_player_event_onInventoryOpened = 	"SecureSafezones\GG_onInventoryOpened.sqf";
+	// Gr8s Secure Safezones
+	ExileClient_object_player_thread_safeZone           = "custom\SecureSafezones\compiles\GG_safeZone.sqf";
+  ExileClient_object_player_event_onEnterSafezone     = "custom\SecureSafezones\compiles\GG_onEnterSafezone.sqf";
+  ExileClient_object_player_event_onLeaveSafezone     = "custom\SecureSafezones\compiles\GG_onLeaveSafezone.sqf";
+  ExileClient_object_player_event_onInventoryOpened   = "custom\SecureSafezones\compiles\GG_onInventoryOpened.sqf";
+  ExileClient_object_vehicle_network_lockResponse     = "custom\SecureSafezones\compiles\GG_lockResponse.sqf";
+  ExileServer_system_trading_network_wasteDumpRequest = "custom\SecureSafezones\compiles\GG_wasteDumpRequest.sqf";
 ```
 
 
